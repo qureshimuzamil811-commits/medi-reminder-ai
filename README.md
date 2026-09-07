@@ -33,6 +33,6 @@ The goal of Medi Reminder AI is to make medicine management simpler, more access
 
 
 
-## Screenshots
+
 
 ![Medi Reminder AI Dashboard](medi_dashboard_preview.png)
