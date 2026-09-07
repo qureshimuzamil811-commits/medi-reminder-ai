@@ -4,7 +4,6 @@ Medi Reminder AI — Your Personal Voice Medicine Assistant. An accessible healt
 # Medi Reminder AI 💊
 
 ## Your Personal Voice Medicine Assistant
-
 Medi Reminder AI is an accessible healthcare platform designed to make medicine management easier through smart reminders, voice assistance, prescription scanning, medicine history, family support, symptom check-ins, and emergency assistance.
 
 ## Key Features
@@ -35,4 +34,4 @@ The goal of Medi Reminder AI is to make medicine management simpler, more access
 
 
 
-![Medi Reminder AI Dashboard](medi_dashboard_preview.png)
+
