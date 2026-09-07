@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Medi Reminder AI - Your Personal Voice Medicine Assistant</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="topbar">
+  <button class="brand" id="btnHome" data-i18n-aria="go_home">
+    <span class="orb-mini" aria-hidden="true"></span>
+    <span class="brand-text">Medi Reminder AI</span>
+  </button>
+  <nav class="topnav" id="topNav" aria-label="Main">
+    <button data-view="home" data-i18n="nav_home">Home</button>
+    <button data-view="medicines" data-i18n="nav_medicines">Medicines</button>
+    <button data-view="history" data-i18n="nav_history">History</button>
+    <button data-view="family" data-i18n="nav_family">Family</button>
+    <button data-view="settings" data-i18n="nav_settings">Settings</button>
+  </nav>
+  <span class="clock" id="topbarClock" aria-hidden="true"></span>
+  <div class="topbar-actions">
+    <button id="btnLang" class="chip-btn" title="Language / زبان">🇬🇧 EN</button>
+    <button id="btnTheme" class="chip-btn" title="Theme">☀️</button>
+    <button id="btnTopEmergency" class="chip-btn emergency-chip" data-i18n-aria="nav_emergency">🆘</button>
+  </div>
+</header>
+
+<main id="app">
+
+  <!-- ============ HOME / DASHBOARD ============ -->
+  <section class="view" id="view-home">
+    <div class="greet-row">
+      <h1 id="greeting">Good Morning</h1><span class="wave" aria-hidden="true">👋</span>
+    </div>
+    <p class="tagline" data-i18n="tagline">Your Personal Voice Medicine Assistant</p>
+
+    <section class="card assistant-card" aria-labelledby="assistantTitle">
+      <div class="orb" id="mediOrb" data-state="ready" aria-hidden="true"><div class="orb-core"></div></div>
+      <div class="assistant-body">
+        <h2 id="assistantTitle" data-i18n="assistant_title">Medi Assistant</h2>
+        <p id="mediIntro" data-i18n="medi_intro">Hello! I'm Medi. I'll help you remember your scheduled medicines.</p>
+        <p class="assistant-reply" id="assistantReply" aria-live="polite"></p>
+        <p class="hint" data-i18n="assistant_hint">Tap the microphone and ask, for example: “What is my next medicine?”</p>
+        <div class="seg ask-row">
+          <button class="chip-btn" id="askNext" data-i18n="q_next">What is my next medicine?</button>
+          <button class="chip-btn" id="askToday" data-i18n="q_today">What medicines do I have today?</button>
+          <button class="chip-btn" id="askMorning" data-i18n="q_morning">Did I take my morning medicine?</button>
+          <button class="chip-btn" id="askHistory" data-i18n="q_history">Show my medicine history.</button>
+        </div>
+      </div>
+      <div class="assistant-mic">
+        <button class="btn-mic" id="btnMicAssistant" data-i18n-aria="mic_btn">🎤</button>
+        <span class="mic-state" id="micState" data-i18n="ready">Ready</span>
+      </div>
+    </section>
+
+    <section class="card next-card" id="nextMedCard" aria-labelledby="nextMedTitle">
+      <h2 id="nextMedTitle" data-i18n="next_medicine">NEXT MEDICINE</h2>
+      <div class="next-body">
+        <img id="nextMedImage" alt="" width="96" height="96">
+        <div class="next-info">
+          <h3 id="nextMedName">—</h3>
+          <p class="next-time" id="nextMedTime"></p>
+          <p class="countdown" id="nextMedCountdown"></p>
+          <span class="chip" id="nextMedStatus" hidden></span>
+        </div>
+      </div>
+      <button class="btn btn-secondary btn-lg" id="btnNextListen">🔊 <span data-i18n="listen">Listen</span></button>
+    </section>
+
+    <section class="card progress-card" aria-labelledby="progressTitle">
+      <h2 id="progressTitle" data-i18n="progress_title">TODAY'S MEDICINE PROGRESS</h2>
+      <div class="progress-row">
+        <div class="ring-wrap">
+          <svg viewBox="0 0 120 120" class="ring" aria-hidden="true">
+            <circle class="ring-bg" cx="60" cy="60" r="52"></circle>
+            <circle class="ring-arc" id="progressArc" cx="60" cy="60" r="52"></circle>
+          </svg>
+          <div class="ring-center" id="progressCenter">0/0</div>
+        </div>
+        <div>
+          <p class="progress-label" id="progressLabel"></p>
+          <div class="legend">
+            <span class="chip ok">🟢 <span data-i18n="st_confirmed">Confirmed</span></span>
+            <span class="chip info">🔵 <span data-i18n="st_upcoming">Upcoming</span></span>
+            <span class="chip warn">🟠 <span data-i18n="st_snoozed">Snoozed</span></span>
+            <span class="chip danger">🔴 <span data-i18n="st_not_confirmed">Not Confirmed</span></span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card today-card" aria-labelledby="todayTitle">
+      <div class="today-head">
+        <h2 id="todayTitle" data-i18n="today_title">TODAY</h2>
+        <button class="btn btn-secondary" id="btnListenSummary">🔊 <span data-i18n="listen_summary">Listen to Summary</span></button>
+      </div>
+      <ul class="timeline" id="todayTimeline"></ul>
+    </section>
+
+    <h2 class="section-title" data-i18n="quick_title">Quick Actions</h2>
+    <div class="quick-grid">
+      <button class="quick-card" data-view="medicines"><span class="q-icon">💊</span><span data-i18n="qa_medicines">My Medicines</span></button>
+      <button class="quick-card" data-view="setup"><span class="q-icon">📷</span><span data-i18n="qa_scan">Scan Prescription</span></button>
+      <button class="quick-card" id="btnTestReminder"><span class="q-icon">🔔</span><span data-i18n="qa_test">Test Reminder</span></button>
+      <button class="quick-card" data-view="family"><span class="q-icon">👨‍‍👧</span><span data-i18n="qa_family">Family</span></button>
+      <button class="quick-card" data-view="history"><span class="q-icon">📊</span><span data-i18n="qa_history">History</span></button>
+      <button class="quick-card emergency-card" data-view="emergency"><span class="q-icon">🆘</span><span data-i18n="qa_emergency">Emergency</span></button>
+    </div>
+
+    <button class="btn btn-secondary btn-xl block" id="btnStartDemo">▶ <span data-i18n="start_demo">Start Demo</span></button>
+    <p class="disclaimer" data-i18n="disclaimer">Medi Reminder AI is a medicine reminder and support tool.</p>
+  </section>
+
+  <!-- ============ MEDICINES ============ -->
+  <section class="view" id="view-medicines" hidden>
+    <div class="view-head">
+      <button class="btn-back" data-view="home" data-i18n="back_home">Back to Home</button>
+      <h2 data-i18n="medicines_title">My Medicines</h2>
+      <button class="btn btn-primary" id="btnAddMed" data-i18n="add_medicine">Add Medicine</button>
+    </div>
+    <p class="demo-banner" id="demoBannerMed" hidden data-i18n="demo_banner">DEMO DATA — NOT MEDICAL ADVICE</p>
+    <div class="med-grid" id="medCards"></div>
+    <p class="empty" id="noMeds" data-i18n="no_medicines">No medicines added yet.</p>
+  </section>
+
+  <!-- ============ SETUP (SCAN + MANUAL) ============ -->
+  <section class="view" id="view-setup" hidden>
+    <div class="view-head">
+      <button class="btn-back" data-view="home" data-i18n="back_home">Back to Home</button>
+      <h2 data-i18n="setup_title">Set Up My Medicines</h2>
+      <span></span>
+    </div>
+
+    <div class="card">
+      <h3 data-i18n="scan_title">Scan / Upload Prescription</h3>
+      <p class="hint" data-i18n="scan_hint">Take a clear photo in good light. OCR reads printed text best.</p>
+      <div class="scan-actions">
+        <button class="btn btn-primary btn-lg" id="btnUpload">📷 <span data-i18n="scan_upload">Upload Prescription</span></button>
+        <button class="btn btn-secondary btn-lg" id="btnCamera">📸 <span data-i18n="scan_camera">Use Camera</span></button>
+        <button class="btn btn-secondary btn-lg" id="btnSample">📄 <span data-i18n="scan_sample">Use Sample Prescription</span></button>
+      </div>
+      <input type="file" id="fileInput" accept="image/*" hidden>
+      <img id="scanPreview" alt="" hidden>
+      <p class="ocr-status" id="ocrStatus" aria-live="polite"></p>
+      <p class="hint" data-i18n="ocr_never_auto">OCR results are never saved automatically. You must confirm them.</p>
+    </div>
+
+    <div class="card" id="reviewCard" hidden>
+      <h3 data-i18n="review_title">PRESCRIPTION REVIEW</h3>
+      <p class="warn-note" data-i18n="ocr_done">We found the following information. Please check it carefully before saving.</p>
+      <div id="reviewList"></div>
+      <div class="row-actions">
+        <button class="btn btn-success btn-xl" id="btnReviewConfirm">✅ <span data-i18n="btn_confirm">Confirm</span></button>
+        <button class="btn btn-secondary btn-lg" id="btnReviewAdd">➕ <span data-i18n="btn_add_med">Add Medicine</span></button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3 id="manualTitle">Add Medicine</h3>
+      <form id="medForm" novalidate>
+        <label><span data-i18n="f_name">Medicine Name</span>
+          <input id="medName" autocomplete="off" required>
+        </label>
+        <label><span data-i18n="f_dose">Prescribed Dose / Instruction</span>
+          <input id="medDose" autocomplete="off">
+        </label>
+        <fieldset>
+          <legend data-i18n="f_times">Reminder times</legend>
+          <div id="timeRows"></div>
+          <button type="button" class="btn btn-ghost" id="btnAddTime" data-i18n="f_add_time">+ Add time</button>
+        </fieldset>
+        <label><span data-i18n="f_freq">Frequency</span>
+          <select id="medFreq">
+            <option value="1" data-i18n="freq_1">Once Daily</option>
+            <option value="2" data-i18n="freq_2">Twice Daily</option>
+            <option value="3" data-i18n="freq_3">Three Times Daily</option>
+            <option value="x" data-i18n="freq_x">Every X Hours</option>
+            <option value="days" data-i18n="freq_days">Specific Days</option>
+            <option value="custom" data-i18n="freq_custom">Custom</option>
+          </select>
+        </label>
+        <label id="hoursWrap" hidden><span data-i18n="f_hours">Every how many hours?</span>
+          <input id="medHours" type="number" min="1" max="24" value="8">
+        </label>
+        <fieldset id="daysWrap" hidden>
+          <legend data-i18n="f_days">Which days?</legend>
+          <div class="day-row" id="dayRow"></div>
+        </fieldset>
+        <label><span data-i18n="f_note">Custom note (optional)</span>
+          <input id="medNote" autocomplete="off">
+        </label>
+        <label><span data-i18n="f_image">Medicine image (optional)</span>
+          <input id="medImage" type="file" accept="image/*">
+        </label>
+        <img id="medImagePreview" alt="" hidden width="96" height="96">
+        <div class="row-actions">
+          <button type="submit" class="btn btn-success btn-xl">💾 <span data-i18n="btn_save">Save Medicine</span></button>
+          <button type="button" class="btn btn-ghost btn-lg" id="btnCancelEdit" hidden data-i18n="btn_cancel">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <!-- ============ HISTORY ============ -->
+  <section class="view" id="view-history" hidden>
+    <div class="view-head">
+      <button class="btn-back" data-view="home" data-i18n="back_home">Back to Home</button>
+      <h2 data-i18n="history_title">Medicine History</h2>
+      <span></span>
+    </div>
+    <div class="filters">
+      <button class="chip-btn active" id="flToday" data-i18n="fl_today">Today</button>
+      <button class="chip-btn" id="flWeek" data-i18n="fl_week">This Week</button>
+      <button class="chip-btn" id="flAll" data-i18n="fl_all">All</button>
+      <span class="chip info" id="histMedChip" hidden></span>
+    </div>
+    <ul class="timeline history-list" id="historyList"></ul>
+    <p class="empty" id="noHistory" hidden data-i18n="no_history">No history yet.</p>
+
+    <h3 class="section-title" data-i18n="symptom_log">SYMPTOM LOG</h3>
+    <ul class="timeline" id="symptomList"></ul>
+    <p class="empty" id="noSymptoms" hidden data-i18n="no_symptoms">No symptoms reported.</p>
+    <button class="btn btn-ghost" id="btnClearHistory" data-i18n="clear_history">Clear History</button>
+  </section>
+
+  <!-- ============ FAMILY / CAREGIVER ============ -->
+  <section class="view" id="view-family" hidden>
+    <div class="view-head">
+      <button class="btn-back" data-view="home" data-i18n="back_home">Back to Home</button>
+      <h2 data-i18n="family_title">FAMILY / CAREGIVER</h2>
+      <span></span>
+    </div>
+    <div class="card">
+      <label class="toggle-row">
+        <input type="checkbox" id="notifyToggle" checked>
+        <span data-i18n="notify_label">Notify my caregiver if I miss my medicine</span>
+      </label>
+      <label class="select-row"><span data-i18n="escalate_label">If I do not confirm, ask me again after</span>
+        <select id="escalationSelect">
+          <option value="1" data-i18n="esc_1">1 minute (for demo)</option>
+          <option value="15" data-i18n="esc_15">15 minutes</option>
+          <option value="30" data-i18n="esc_30">30 minutes</option>
+          <option value="60" data-i18n="esc_60">60 minutes</option>
+        </select>
+      </label>
+    </div>
+
+    <div class="card">
+      <h3 data-i18n="fam_status">TODAY'S MEDICINE STATUS</h3>
+      <div id="famStatusRows"></div>
+      <div class="fam-meta">
+        <p><strong data-i18n="fam_next">Next medicine</strong>: <span id="famNext">—</span></p>
+        <p><strong data-i18n="fam_last">Last confirmation</strong>: <span id="famLast">—</span></p>
+        <p><strong data-i18n="fam_miss">Not-confirmed reminders</strong>: <span id="famMiss">—</span></p>
+        <p><strong data-i18n="fam_symptoms">User-reported symptoms</strong>: <span id="famSyms">—</span></p>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3 data-i18n="cg_title">Add a Caregiver</h3>
+      <form id="cgForm" novalidate>
+        <label><span data-i18n="cg_name">Name</span><input id="cgName" autocomplete="off"></label>
+        <label><span data-i18n="cg_rel">Relationship</span><input id="cgRel" autocomplete="off"></label>
+        <label><span data-i18n="cg_phone">Phone Number (with country code)</span><input id="cgPhone" type="tel" autocomplete="off"></label>
+        <label><span data-i18n="cg_wa">WhatsApp Number (optional)</span><input id="cgWa" type="tel" autocomplete="off"></label>
+        <label><span data-i18n="cg_email">Email (optional)</span><input id="cgEmail" type="email" autocomplete="off"></label>
+        <button type="submit" class="btn btn-primary btn-xl">➕ <span data-i18n="btn_add_cg">Add Caregiver</span></button>
+      </form>
+    </div>
+    <div id="cgList"></div>
+    <p class="empty" id="noCg" hidden data-i18n="no_cg">No caregivers added yet.</p>
+    <p class="hint" data-i18n="cg_note">Caregiver details are stored only on this device.</p>
+  </section>
+
+  <!-- ============ EMERGENCY ============ -->
+  <section class="view" id="view-emergency" hidden>
+    <div class="view-head">
+      <button class="btn-back" data-view="home" data-i18n="back_home">Back to Home</button>
+      <h2 class="em-heading" data-i18n="em_title">EMERGENCY HELP</h2>
+      <span></span>
+    </div>
+
+    <div class="card em-call-card">
+      <p data-i18n="em_sub">If this is an emergency, call now.</p>
+      <a class="btn btn-danger btn-xxl block" id="btnCallNow" href="tel:112">📞 <span data-i18n="em_call_now">CALL NOW</span></a>
+      <p id="emContactInfo" class="em-contact-info"></p>
+      <button class="btn btn-ghost" id="btnEditContact" data-i18n="em_contact_title">Emergency Contact</button>
+      <form id="emContactForm" hidden novalidate>
+        <label><span data-i18n="ec_name">Contact name</span><input id="ecName" autocomplete="off"></label>
+        <label><span data-i18n="ec_rel">Relationship</span><input id="ecRel" autocomplete="off"></label>
+        <label><span data-i18n="ec_phone">Phone</span><input id="ecPhone" type="tel" autocomplete="off"></label>
+        <button type="submit" class="btn btn-primary btn-lg">💾 <span data-i18n="btn_save_contact">Save Contact</span></button>
+      </form>
+    </div>
+
+    <div class="em-grid">
+      <button class="btn btn-secondary btn-xl" id="btnEmCallCg">👨‍‍👧 <span data-i18n="em_call_cg">Call Caregiver</span></button>
+      <button class="btn btn-secondary btn-xl" id="btnEmLocation">📍 <span data-i18n="em_location">Share Location</span></button>
+      <a class="btn btn-secondary btn-xl" id="btnEmMedical" href="tel:112">🏥 <span data-i18n="em_medical">Get Medical Help</span></a>
+    </div>
+    <p class="hint" data-i18n="loc_btn_hint">Your location is only shared if you press the button. Never automatically.</p>
+    <p id="locationResult" class="loc-result" hidden></p>
+    <a id="locMaps" class="btn btn-ghost" hidden target="_blank" rel="noopener" data-i18n="open_maps">Open in Maps</a>
+    <label class="select-row"><span data-i18n="em_number_label">My local emergency number</span>
+      <input id="emNumber" value="112" inputmode="numeric">
+    </label>
+
+    <h3 class="section-title" data-i18n="em_symptoms">These symptoms may need urgent medical attention</h3>
+    <div class="em-sym-grid">
+      <button class="em-sym-btn" data-emg="chest">❤️ <span data-i18n="em_chest">Chest Pain / Pressure</span></button>
+      <button class="em-sym-btn" data-emg="stroke">🧠 <span data-i18n="em_stroke">Possible Stroke Signs</span></button>
+      <button class="em-sym-btn" data-emg="breath">😮💨 <span data-i18n="em_breath">Severe Trouble Breathing</span></button>
+      <button class="em-sym-btn" data-emg="faint">😵 <span data-i18n="em_faint">Fainting / Unable to Stay Awake</span></button>
+      <button class="em-sym-btn" data-emg="allergy">⚠️ <span data-i18n="em_allergy">Severe Allergic Reaction Signs</span></button>
+      <button class="em-sym-btn" data-emg="vomit">🤮 <span data-i18n="em_vomit">Severe / Persistent Vomiting</span></button>
+      <button class="em-sym-btn" data-emg="other">❓ <span data-i18n="em_other">Something Else</span></button>
+    </div>
+
+    <div class="card em-guidance" id="emGuidance" hidden>
+      <h3 data-i18n="em_urgent">THIS MAY REQUIRE URGENT MEDICAL ATTENTION</h3>
+      <p id="emGuidanceText"></p>
+      <div class="row-actions">
+        <a class="btn btn-danger btn-xl" id="emgCall" href="tel:112">📞 <span data-i18n="em_call_help">Call Emergency Help</span></a>
+        <button class="btn btn-secondary btn-xl" id="emgCg">👨‍‍👧 <span data-i18n="em_call_cg">Call Caregiver</span></button>
+      </div>
+    </div>
+    <p class="disclaimer" data-i18n="em_no_diagnose">Medi Reminder AI cannot diagnose.</p>
+  </section>
+
+  <!-- ============ SETTINGS ============ -->
+  <section class="view" id="view-settings" hidden>
+    <div class="view-head">
+      <button class="btn-back" data-view="home" data-i18n="back_home">Back to Home</button>
+      <h2 data-i18n="set_title">Settings</h2>
+      <span></span>
+    </div>
+    <div class="card">
+      <h3 data-i18n="set_lang">Language</h3>
+      <div class="seg">
+        <button class="chip-btn active" id="langEn">🇬🇧 English</button>
+        <button class="chip-btn" id="langUr">🇵🇰 اردو</button>
+      </div>
+      <h3 data-i18n="set_theme">Theme</h3>
+      <div class="seg">
+        <button class="chip-btn active" id="themeLight" data-i18n="theme_light">☀️ Light Mode</button>
+        <button class="chip-btn" id="themeDark" data-i18n="theme_dark">🌙 Dark Mode</button>
+      </div>
+    </div>
+    <div class="card">
+      <label class="toggle-row"><input type="checkbox" id="tglLarge"><span data-i18n="set_large">Large Text Mode</span></label>
+      <label class="toggle-row"><input type="checkbox" id="tglContrast"><span data-i18n="set_contrast">High Contrast Mode</span></label>
+      <label class="toggle-row"><input type="checkbox" id="tglVoice" checked><span data-i18n="set_voice">Voice Guidance</span></label>
+      <label class="toggle-row"><input type="checkbox" id="tglNotif"><span data-i18n="set_notif">Browser notifications</span></label>
+    </div>
+    <div class="card">
+      <h3 data-i18n="set_about">About & Disclaimer</h3>
+      <p class="disclaimer" data-i18n="disclaimer">Medi Reminder AI is a medicine reminder and support tool.</p>
+      <p class="hint" data-i18n="set_note">All data is stored only in this browser (localStorage).</p>
+      <p class="hint" data-i18n="future_note">Backend-ready architecture notes are in the code.</p>
+      <button class="btn btn-danger btn-lg" id="btnClearAll">🗑 <span data-i18n="clear_all">Clear All App Data</span></button>
+    </div>
+  </section>
+</main>
+
+<nav class="bottomnav" id="bottomNav" aria-label="Main mobile">
+  <button data-view="home"><span class="b-icon">🏠</span><span data-i18n="nav_home">Home</span></button>
+  <button data-view="medicines"><span class="b-icon">💊</span><span data-i18n="nav_medicines">Medicines</span></button>
+  <button data-view="history"><span class="b-icon">📊</span><span data-i18n="nav_history">History</span></button>
+  <button data-view="family"><span class="b-icon">👨‍👩‍👧</span><span data-i18n="nav_family">Family</span></button>
+  <button data-view="settings"><span class="b-icon">⚙️</span><span data-i18n="nav_settings">Settings</span></button>
+</nav>
+
+<div id="toast" role="status" aria-live="polite"></div>
+
+<!-- ============ REMINDER MODAL ============ -->
+<dialog id="reminderModal" class="reminder-dialog" aria-labelledby="reminderTitle">
+  <p class="rem-alert" id="reminderTitle" data-i18n="rem_title">TIME FOR YOUR MEDICINE</p>
+  <img id="reminderImage" alt="" width="160" height="160">
+  <h2 id="reminderMedName">—</h2>
+  <p class="rem-dose" id="reminderDose"></p>
+  <p class="rem-time" id="reminderTime"></p>
+  <p class="rem-ask" data-i18n="rem_ask">Did you take your medicine?</p>
+  <button class="btn btn-success btn-xxl block" id="btnConfirmTaken">✅ <span data-i18n="rem_took">I TOOK IT</span></button>
+  <button class="btn btn-warn btn-xl block" id="btnRemindLater">⏰ <span data-i18n="rem_later">REMIND ME LATER</span></button>
+  <div class="row-actions">
+    <button class="btn btn-secondary btn-lg" id="btnListenAgain">🔊 <span data-i18n="rem_listen">LISTEN AGAIN</span></button>
+    <button class="btn btn-secondary btn-lg" id="btnMic">🎤 <span data-i18n="rem_voice">VOICE RESPONSE</span></button>
+  </div>
+  <p class="voice-status" id="voiceStatus" aria-live="polite"></p>
+  <div id="snoozePanel" hidden>
+    <button class="btn btn-warn btn-lg snooze-opt" data-min="5" data-i18n="sn_5">5 Minutes</button>
+    <button class="btn btn-warn btn-lg snooze-opt" data-min="10" data-i18n="sn_10">10 Minutes</button>
+    <button class="btn btn-warn btn-lg snooze-opt" data-min="15" data-i18n="sn_15">15 Minutes</button>
+    <button class="btn btn-warn btn-lg snooze-opt" data-min="30" data-i18n="sn_30">30 Minutes</button>
+  </div>
+  <button class="btn btn-ghost" id="btnDismissReminder" data-i18n="rem_close">Close without confirming</button>
+</dialog>
+
+<!-- ============ SUCCESS MODAL ============ -->
+<dialog id="successModal" class="success-dialog" aria-labelledby="successTitle">
+  <div class="check-anim" aria-hidden="true">
+    <svg viewBox="0 0 52 52"><circle class="check-circle" cx="26" cy="26" r="25"/><path class="check-mark" fill="none" d="M14 27l8 8 16-16"/></svg>
+  </div>
+  <h2 id="successTitle" data-i18n="taken_title">MEDICINE TAKEN</h2>
+  <p data-i18n="taken_text">Your medicine has been marked as confirmed.</p>
+  <p class="hint" data-i18n="taken_note">Medi records your confirmation.</p>
+  <button class="btn btn-primary btn-xl" id="btnSuccessDone" data-i18n="btn_done">Done</button>
+</dialog>
+
+<!-- ============ SYMPTOM CHECK-IN ============ -->
+<dialog id="checkinDialog" class="checkin-dialog" aria-labelledby="checkinTitle">
+  <h2 id="checkinTitle" data-i18n="checkin_title">HOW ARE YOU FEELING?</h2>
+  <p class="hint" data-i18n="checkin_hint">This is only symptom logging. Medi does not diagnose.</p>
+  <div class="feel-grid" id="feelGrid">
+    <button class="feel-btn" data-feel="ok">😊 <span data-i18n="feel_ok">No Problem</span></button>
+    <button class="feel-btn" data-feel="nausea">🤢 <span data-i18n="feel_nausea">Nausea / Feeling Sick</span></button>
+    <button class="feel-btn" data-feel="vomit">🤮 <span data-i18n="feel_vomit">Vomiting</span></button>
+    <button class="feel-btn" data-feel="dizzy">😵 <span data-i18n="feel_dizzy">Dizziness</span></button>
+    <button class="feel-btn" data-feel="sleepy">😴 <span data-i18n="feel_sleepy">Unusual Sleepiness</span></button>
+    <button class="feel-btn" data-feel="urine">🚻 <span data-i18n="feel_urine">Changes in Urination</span></button>
+    <button class="feel-btn" data-feel="other">⚠️ <span data-i18n="feel_other">Something Else</span></button>
+  </div>
+  <div id="severityWrap" hidden>
+    <div class="seg">
+      <button class="chip-btn active" data-sev="mild" data-i18n="sev_mild">Mild</button>
+      <button class="chip-btn" data-sev="moderate" data-i18n="sev_moderate">Moderate</button>
+      <button class="chip-btn" data-sev="severe" data-i18n="sev_severe">Severe</button>
+    </div>
+    <label><span data-i18n="note_label">Optional note</span><textarea id="symNote" rows="2"></textarea></label>
+    <button class="btn btn-primary btn-xl" id="btnSaveSymptom">💾 <span data-i18n="btn_save_symptom">Save Symptom</span></button>
+  </div>
+  <div id="checkinResponse" hidden>
+    <p class="safety-text" id="checkinResponseText"></p>
+  </div>
+  <div class="row-actions">
+    <button class="btn btn-success btn-lg" id="btnCheckinDone" data-i18n="btn_done">Done</button>
+    <button class="btn btn-ghost btn-lg" id="btnCheckinSkip" data-i18n="btn_skip">Skip</button>
+  </div>
+</dialog>
+
+<!-- ============ ESCALATION MODAL ============ -->
+<dialog id="escalationModal" class="escalation-dialog" aria-labelledby="escalationTitle">
+  <h2 id="escalationTitle" data-i18n="esc_title">Medicine not confirmed</h2>
+  <p data-i18n="esc_text">This medicine has not been confirmed.</p>
+  <div class="escalation-actions" id="escalationActions"></div>
+  <button class="btn btn-primary btn-xl block" id="btnEscContinue" data-i18n="esc_continue">Continue Reminder</button>
+  <button class="btn btn-ghost" id="btnEscDismiss" data-i18n="esc_dismiss">Dismiss</button>
+</dialog>
+
+<!-- ============ CAMERA MODAL ============ -->
+<dialog id="cameraDialog" class="camera-dialog" aria-labelledby="cameraTitle">
+  <h2 id="cameraTitle" data-i18n="camera_title">Camera</h2>
+  <video id="cameraVideo" autoplay playsinline muted></video>
+  <canvas id="cameraCanvas" hidden></canvas>
+  <p class="warn-note" id="camErr" hidden data-i18n="camera_denied">Camera permission was denied or unavailable.</p>
+  <div class="row-actions">
+    <button class="btn btn-primary btn-xl" id="btnCapture">📸 <span data-i18n="camera_capture">Capture</span></button>
+    <button class="btn btn-ghost btn-lg" id="btnCamCancel" data-i18n="btn_cancel">Cancel</button>
+  </div>
+</dialog>
+
+<!-- ============ ABOUT MEDICINE MODAL ============ -->
+<dialog id="aboutDialog" class="about-dialog" aria-labelledby="aboutTitle">
+  <h2 id="aboutTitle" data-i18n="about_title">ABOUT THIS MEDICINE</h2>
+  <div id="aboutBody"></div>
+  <button class="btn btn-primary btn-xl" id="btnAboutClose" data-i18n="btn_done">Done</button>
+</dialog>
+
+<script src="i18n.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
